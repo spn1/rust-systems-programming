@@ -32,11 +32,12 @@ impl CPU {
     }
 
     fn add_xy(&mut self, x: u8, y: u8) {
-        self.registers[x as usize] += self.registers[y as usize]
+        // Result is stored in register x
+        self.registers[x as usize] += self.registers[y as usize];
     }
 }
 
-fn run() {
+pub fn run() {
     let mut cpu = CPU {
         current_operation: 0,
         registers: [0; 2]
@@ -49,5 +50,9 @@ fn run() {
     //      4 = indicates addition
     cpu.current_operation = 0x8014;
     cpu.registers[0] = 5;
-    cpu.registers[1] = 10;    
+    cpu.registers[1] = 10;
+
+    cpu.run();
+
+    print!("Result of operation 0x8014 = {:?}", cpu.registers[0])
 }
