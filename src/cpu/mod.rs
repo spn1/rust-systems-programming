@@ -13,6 +13,11 @@ struct CPU {
 }
 
 impl CPU {
+    /// Adds the value of kk to register vx
+    fn add(&mut self, vx: u8, kk: u8) {
+        self.registers[vx as usize] += kk; 
+    }
+
     fn add_xy(&mut self, x: u8, y: u8) {
         let arg1 = self.registers[x as usize];
         let arg2 = self.registers[y as usize];
@@ -25,6 +30,52 @@ impl CPU {
         } else {
             self.registers[0xF] = 0;
         }
+    }
+
+    /// AND of x & y
+    fn and_xy(&mut self, x: u8, y: u8) {
+        let x_ = self.registers[x as usize];
+        let y_ = self.registers[y as usize];
+
+        self.registers[x as usize] = x_ & y_;
+    }
+
+    /// OR of x & y
+    fn or_xy(&mut self, x: u8, y: u8) {
+        let x_ = self.registers[x as usize];
+        let y_ = self.registers[y as usize];
+
+        self.registers[x as usize] = x_ | y_;
+    }
+
+    /// XOR of x & y
+    fn xor_xy(&mut self, x: u8, y: u8) {
+        let x_ = self.registers[x as usize];
+        let y_ = self.registers[y as usize];
+
+        self.registers[x as usize] = x_ ^ y_;
+    }
+
+    fn store_if_equal(&mut self, vx: u8, kk: u8) {
+        if vx == kk {
+            self.position_in_memory += 2;
+        }
+    }
+
+    fn store_if_not_equal(&mut self, vx: u8, kk: u8) {
+        if vx != kk {
+            self.position_in_memory += 2;
+        }
+    }
+
+    /// Load value kk into register vx
+    fn load(&mut self, vx: u8, kk: u8) {
+        self.registers[vx as usize] = kk; 
+    }
+
+    /// Moves to specific location in memory
+    fn jump_to(&mut self, addr: u16) {
+        self.position_in_memory = addr as usize;
     }
 
     /// Reads the opcode from position_in_memory
@@ -75,22 +126,37 @@ impl CPU {
             // Each half-a-byte (4 bits) is called a nibble
             let opcode = self.read_opcode();
 
-            self.position_in_memory += 2;
-
             let c = ((opcode & 0xF000) >> 12) as u8;
             let x = ((opcode & 0x0F00) >> 8) as u8;
             let y = ((opcode & 0x00F0) >> 4) as u8;
             let d = ((opcode & 0x000F) >> 0) as u8;
-
-            let nnn = opcode & 0x0FFF;
             let kk = (opcode & 0x00FF) as u8;
+            let addr = opcode & 0x0FFF;
+
+            self.position_in_memory += 2;
+
 
             match (c, x, y, d) {
                 (0, 0, 0, 0)        => { return; },
                 (0, 0, 0xE, 0xE)    => self.ret(),
-                (0x2, _, _, _)      => self.call(nnn),
-                (0x8, _, _, 0x4)    => self.add_xy(x, y),
-                _                   => todo!("opcode {:04x}", opcode),
+                (0x1, _, _, _)      => self.jump_to(addr),
+                (0x2, _, _, _)      => self.call(addr),
+                (0x3, _, _, _)      => self.store_if_equal(x, kk),
+                (0x4, _, _, _)      => self.store_if_not_equal(x, kk),
+                (0x5, _, _, _)      => self.store_if_not_equal(x, y),
+                (0x6, _, _, _)      => self.load(x, kk),
+                (0x7, _, _, _)      => self.add(x, kk),
+                (0x8, _, _, _)      => {
+                    match d {
+                        0 => { self.load(x, self.registers[y as usize]) },
+                        1 => { self.or_xy(x, y) },
+                        2 => { self.and_xy(x, y) },
+                        3 => { self.xor_xy(x, y) },
+                        4 => { self.add_xy(x, y); },
+                        _ => { todo!("opcode: {:04x}", opcode); },
+                    }
+                },
+                _ => todo!("opcode {:04x}", opcode),
             }
         }
     }
