@@ -10,8 +10,11 @@
 // mod mock_randomness;
 // use mock_randomness::run;
 
-mod cpu;
-use cpu::run;
+// mod cpu;
+// use cpu::run;
+
+mod snow;
+use snow::run;
 
 fn main() {
     // run();
