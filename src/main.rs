@@ -13,10 +13,12 @@
 // mod cpu;
 // use cpu::run;
 
-mod snow;
-use snow::run;
+// mod snow;
+// use snow::run;
+
+mod virtual_memory;
+use virtual_memory::run;
 
 fn main() {
-    // run();
     run();
 }

@@ -1294,9 +1294,11 @@ dependencies = [
 name = "rust-playground"
 version = "0.1.0"
 dependencies = [
+ "kernel32-sys",
  "piston2d-graphics",
  "piston_window",
  "rand",
+ "winapi 0.2.8",
 ]
 
 [[package]]
