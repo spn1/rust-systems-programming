@@ -16,8 +16,11 @@
 // mod snow;
 // use snow::run;
 
-mod virtual_memory;
-use virtual_memory::run;
+// mod virtual_memory;
+// use virtual_memory::run;
+
+mod hexdump;
+use hexdump::run;
 
 fn main() {
     run();
